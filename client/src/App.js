@@ -17,7 +17,7 @@ function App() {
         <Route path="SignUp" element={<SignUp />} />
         <Route path="Unauthorized" element={<Unauthorized />} />
 
-        <Route element={<RequireAuth allowedRoles={["user", "manager"]} />}>
+        <Route element={<RequireAuth allowedRoles={["user"]} />}>
           <Route path="UserForm" element={<UserForm />} />
         </Route>
 

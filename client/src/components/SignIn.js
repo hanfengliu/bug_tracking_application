@@ -35,11 +35,12 @@ const SignIn = () => {
           clearForm(e);
           const roles = res?.data?.roles;
           setAuth({ email, password, roles });
-          if (auth.roles.includes("manager")) {
+          console.log(auth?.roles);
+          if (auth?.roles?.includes("manager")) {
             navigate("/Interface");
-          } else if (auth.roles.includes("programmer")) {
+          } else if (auth?.roles?.includes("programmer")) {
             navigate("/UserForm");
-          } else if (auth.roles.includes("user")) {
+          } else if (auth?.roles?.includes("user")) {
             navigate("/UserForm");
           }else{
             navigate("/Unauthorized");

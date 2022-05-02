@@ -8,17 +8,9 @@ import {
   FloatingLabel,
 } from "react-bootstrap";
 import { useContext, useEffect, useState } from "react";
+import Navbar from "./Navbar";
 
 const UserForm = () => {
-  const bugList = [
-    { bugName: "Crash", clicked: false },
-    { bugName: "Functional error", clicked: false },
-    { bugName: "Typos", clicked: false },
-    { bugName: "Missing command", clicked: false },
-    { bugName: "Calculation error", clicked: false },
-    { bugName: "Control flow error", clicked: false },
-  ];
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [date, setDate] = useState("");
@@ -28,29 +20,49 @@ const UserForm = () => {
   const [browser, setBrowser] = useState("");
   const [os, setOS] = useState("");
   const [URL, setURL] = useState("");
-  const [bugs, setBugs] = useState(bugList);
+  const [bugs, setBugs] = useState([]);
   const [message, setMessage] = useState("");
   const [procedure, setProcedure] = useState("");
+  const [score, setScore] = useState(0);
+  const [numClick, setNumClick] = useState(0);
   // const [pref, setPref] = useState({
   //     webcam: false
   // });
 
   const [bugsList, setBugsList] = useState([]);
 
+  useEffect(() => {
+    Axios.get("http://localhost:3001/getAllBugs").then((response) => {
+      setBugsList(response.data);
+    });
+  }, [bugsList]);
+
   const convertTime = (str) => {
     var date = new Date(str);
     setDate(str);
     setYear(date.getFullYear());
     setMonth(date.getMonth());
-    setDay(date.getDay());
+    setDay(date.getUTCDate());
   };
 
-  const changeBugList = (e, id) => {
-    e.target.clicked = !e.target.clicked;
+  const changeBugList = (e, bugName, sc) => {
+    if (e.target.clicked === undefined) e.target.clicked = true;
+    else e.target.clicked = !e.target.clicked;
+
+    if (e.target.clicked) {
+      setScore(sc + score);
+      setNumClick(numClick + 1);
+    } else {
+      setScore(score - sc);
+      setNumClick(numClick - 1);
+    }
 
     let newList = [...bugs];
-    newList[id].clicked = e.target.clicked;
-
+    if (e.target.clicked) newList.push(bugName);
+    else
+      newList = newList.filter((name) => {
+        return name !== bugName;
+      });
     setBugs(newList);
   };
 
@@ -59,8 +71,17 @@ const UserForm = () => {
     let bugString = "";
 
     bugs.forEach((bug) => {
-      if (bug.clicked) bugString += bug.bugName + ",";
+      bugString += bug + ";";
     });
+    console.log(bugsList);
+    console.log(score);
+    console.log(numClick);
+    var avgScore = score / numClick;
+    var severity = "";
+
+    if (avgScore > 25) severity = "critical";
+    else if (avgScore > 17) severity = "moderate";
+    else severity = "minor";
 
     Axios.post("http://localhost:3001/create", {
       first_name: firstName,
@@ -74,17 +95,12 @@ const UserForm = () => {
       software_bug_list: bugString,
       message: message,
       procedure: procedure,
+      avgScore: avgScore,
+      severity: severity,
     }).then((response) => {
       console.log(response);
     });
-
     clearForm(e);
-  };
-
-  const getAllBugs = () => {
-    Axios.get("http://localhost:3001/getAllBugs").then((response) => {
-      setBugsList(response.data);
-    });
   };
 
   const clearForm = (e) => {
@@ -95,10 +111,18 @@ const UserForm = () => {
     setURL("");
     setMessage("");
     setProcedure("");
+    setBugs([]);
+    setBugsList([]);
   };
 
   return (
-    <Form className="mx-auto mt-5" style={{ width: "680px" }} onSubmit={addBug}>
+    <Form
+      className="mx-auto mt-5"
+      variant="bg-primary"
+      style={{ width: "680px" }}
+      onSubmit={addBug}
+    >
+      <Navbar/>
       <Row className="mb-3">
         <Form.Group as={Col}>
           <Form.Label>First Name</Form.Label>
@@ -107,6 +131,7 @@ const UserForm = () => {
             placeholder="Enter your First Name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
+            required
           />
         </Form.Group>
         <Form.Group as={Col}>
@@ -116,6 +141,7 @@ const UserForm = () => {
             placeholder="Enter your Last Name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
+            required
           />
         </Form.Group>
       </Row>
@@ -127,6 +153,7 @@ const UserForm = () => {
             type="date"
             value={date}
             onChange={(e) => convertTime(e.target.value)}
+            required
           />
         </Form.Group>
       </Row>
@@ -134,7 +161,7 @@ const UserForm = () => {
       <Row className="mb-3">
         <Form.Group as={Col}>
           <Form.Label>Brower</Form.Label>
-          <Form.Select onChange={(e) => setBrowser(e.target.value)}>
+          <Form.Select onChange={(e) => setBrowser(e.target.value)} required>
             <option value="">Select your Brower</option>
             <option value="Google Chrome">Google Chrome</option>
             <option value="Internet Exploer">Internet Exploer</option>
@@ -146,7 +173,7 @@ const UserForm = () => {
         </Form.Group>
         <Form.Group as={Col}>
           <Form.Label>Operating System</Form.Label>
-          <Form.Select onChange={(e) => setOS(e.target.value)}>
+          <Form.Select onChange={(e) => setOS(e.target.value)} required>
             <option value="">Select your Operating System</option>
             <option value="Window 11">Window 11</option>
             <option value="Window 10">Window 10</option>
@@ -171,70 +198,21 @@ const UserForm = () => {
 
       <Row className="mb-3">
         <Form.Label>Software Bug</Form.Label>
-        <Row className="mb-1 ">
-          <Form.Group as={Col}>
-            <Form.Check
-              type="checkbox"
-              label="Crash"
-              name="Crash"
-              defaultChecked={false}
-              onChange={(e) => {
-                changeBugList(e, 0);
-              }}
-            />
-          </Form.Group>
-          <Form.Group as={Col}>
-            <Form.Check
-              type="checkbox"
-              label="Functional error"
-              defaultChecked={false}
-              onChange={(e) => {
-                changeBugList(e, 1);
-              }}
-            />
-          </Form.Group>
-          <Form.Group as={Col}>
-            <Form.Check
-              type="checkbox"
-              label="Typos"
-              defaultChecked={false}
-              onChange={(e) => {
-                changeBugList(e, 2);
-              }}
-            />
-          </Form.Group>
-        </Row>
         <Row className="mb-1">
-          <Form.Group as={Col}>
-            <Form.Check
-              type="checkbox"
-              label="Missing command"
-              defaultChecked={false}
-              onChange={(e) => {
-                changeBugList(e, 3);
-              }}
-            />
-          </Form.Group>
-          <Form.Group as={Col}>
-            <Form.Check
-              type="checkbox"
-              label="Calculation error"
-              defaultChecked={false}
-              onChange={(e) => {
-                changeBugList(e, 4);
-              }}
-            />
-          </Form.Group>
-          <Form.Group as={Col}>
-            <Form.Check
-              type="checkbox"
-              label="Control flow error"
-              defaultChecked={false}
-              onChange={(e) => {
-                changeBugList(e, 5);
-              }}
-            />
-          </Form.Group>
+          <ul style={{ overflowY: "scroll", height: "200px" }}>
+            {bugsList.map((bug) => (
+              <Form.Check
+                key={bug.ID}
+                type="checkbox"
+                name={bug.bugName}
+                label={bug.bugName}
+                defaultChecked={false}
+                onChange={(e) => {
+                  changeBugList(e, bug.bugName, bug.score);
+                }}
+              />
+            ))}
+          </ul>
         </Row>
       </Row>
 

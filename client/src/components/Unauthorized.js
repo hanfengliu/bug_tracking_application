@@ -5,7 +5,17 @@ import { Card, ButtonGroup, Button, Row, Col } from "react-bootstrap";
 const Unauthorized = () => {
   const { auth } = useAuth();
   const navigate = useNavigate();
-  const goBack = () => navigate(-1);
+  const goBack = () => {
+    if (auth?.roles?.includes("manager")) {
+      navigate("/Interface");
+    } else if (auth?.roles?.includes("programmer")) {
+      navigate("/UserForm");
+    } else if (auth?.roles?.includes("user")) {
+      navigate("/UserForm");
+    } else {
+      navigate("/SignIn");
+    }
+  };
 
   return (
     <Card className="mx-auto mt-5" style={{ width: "18rem" }}>

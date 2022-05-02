@@ -30,14 +30,42 @@ app.post("/create", (req, res) => {
   const software_bug_list = req.body.software_bug_list;
   const message = req.body.message;
   const procedure = req.body.procedure;
+  const avgScore = req.body.avgScore;
+  const severity = req.body.severity;
+  
+  // const reportedBugs = software_bug_list.split(";");
+  // let results = 0;
+
+  // reportedBugs.forEach((reportedBug) => {
+  //   if (reportedBug !== "") {
+  //     db.query(
+  //       "SELECT score FROM `bugs` WHERE bugName = ?",
+  //       [reportedBug],
+  //       (err, result) => {
+  //         if (err) {
+  //           console.log(err);
+  //         } else {
+  //           results += result[0].score;
+  //           console.log("inside"+reportedBug+results);
+  //         }
+  //       }
+  //     );
+  //   }
+  //   console.log("outside" + reportedBug + results);
+  // });
+
+  // //results /= reportedBugs.length - 1;
+  // console.log("last" + results);
+
+  // return;
 
   db.query(
-    "INSERT INTO `bugs_table` (`first_name`, `last_name`, `year`, `month`, `day`, `browser`, `operating_system`, `url`, `software_bug_list`, `message`, `procedure`) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+    "INSERT INTO `bugs_table` (`first_name`, `last_name`, `year`, `month`, `day`, `browser`, `operating_system`, `url`, `software_bug_list`, `message`, `procedure`, `avgScore`,`severity`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
     [
       first_name,
       last_name,
       year,
-      month,
+      month + 1,
       day,
       browser,
       operating_system,
@@ -45,6 +73,8 @@ app.post("/create", (req, res) => {
       software_bug_list,
       message,
       procedure,
+      avgScore,
+      severity,
     ],
     (err, result) => {
       if (err) {
@@ -279,6 +309,16 @@ app.post("/signIn", (req, res) => {
 });
 
 app.get("/getAllBugs", (req, res) => {
+  db.query("SELECT * FROM `bugs`", (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
+app.get("/getSubmitedBugs", (req, res) => {
   db.query("SELECT * FROM `bugs_table`", (err, result) => {
     if (err) {
       console.log(err);
