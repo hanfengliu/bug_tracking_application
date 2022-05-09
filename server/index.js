@@ -117,8 +117,8 @@ app.post("/signUp", (req, res) => {
           } else {
             console.log("programmer not found");
             db.query(
-              "INSERT INTO `programmers_table` (`email`, `firstName`, `lastName`, `programmer`, `password`) VALUES (?,?,?,?,?)",
-              [email, firstName, lastName, user, password],
+              "INSERT INTO `programmers_table` (`email`, `firstName`, `lastName`, `programmer`, `password`, `available`) VALUES (?,?,?,?,?,?)",
+              [email, firstName, lastName, user, password, true],
               (err, result) => {
                 if (err) {
                   console.log("An error occurred:" + err.message);
@@ -326,6 +326,19 @@ app.get("/getSubmitedBugs", (req, res) => {
       res.send(result);
     }
   });
+});
+
+app.get("/getAllAvailableProgrammers", (req, res) => {
+  db.query(
+    "SELECT * FROM `programmers_table` where available = true",
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send(result);
+      }
+    }
+  );
 });
 
 app.listen(3001, () => console.log("your server is running on port 3001"));

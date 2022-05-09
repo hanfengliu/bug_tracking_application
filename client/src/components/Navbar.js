@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Button, ButtonGroup, Row, Col } from "react-bootstrap";
-import { useEffect, useState, useContext } from "react";
+import { useContext } from "react";
 import { Link } from "react-router-dom";
 import AuthContext from "../context/AuthProvider";
 

@@ -2,11 +2,15 @@ import { Row, Col, Card, Button } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
+import VerticallyCenteredModal from "./VerticallyCenteredModal";
 
 const BugItem = ({ bug }) => {
   const [detail, setDetail] = useState(false);
   const [reportedBugs, setReportedBugs] = useState([]);
   const [color, setColor] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [programmer, setProgrammer] = useState("N/A");
+
   useEffect(() => {
     setReportedBugs(bug.software_bug_list.split(";"));
     if (bug.avgScore > 25) setColor("danger");
@@ -14,13 +18,22 @@ const BugItem = ({ bug }) => {
     else setColor("success");
   }, []);
 
+  const changeProgrammer=(prog)=>{
+    setProgrammer(prog)
+  }
+
   return (
-    <Card className="mb-3" bg={color} text={"white"} border="dark">
+    <Card
+      className="mb-3"
+      bg={color}
+      text={color === "warning" ? "black" : "white"}
+      border="dark"
+    >
       <Card.Header>
         <Row>
           <Col className="d-flex justify-content-center mt-2">{bug.id}</Col>
           <Col className="d-flex justify-content-center mt-2">N/A</Col>
-          <Col className="d-flex justify-content-center mt-2">N/A</Col>
+          <Col className="d-flex justify-content-center mt-2">{programmer}</Col>
           <Col className="d-flex justify-content-end">
             <Button
               variant="light"
@@ -88,7 +101,22 @@ const BugItem = ({ bug }) => {
         </Row>
       </Card.Body>
       <Card.Footer>
-        <small className="text-white">Last updated 3 mins ago</small>
+        <Row>
+          <Col>
+            <small>Last updated 3 mins ago</small>
+          </Col>
+          <Col className="d-flex justify-content-end">
+            <Button variant="primary" onClick={() => setShowModal(true)}>
+              Edit
+            </Button>
+            <VerticallyCenteredModal
+              show={showModal}
+              onHide={() => setShowModal(false)}
+              severity={bug.severity}
+              changeProgrammer={changeProgrammer}
+            />
+          </Col>
+        </Row>
       </Card.Footer>
     </Card>
   );

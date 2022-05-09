@@ -13,17 +13,19 @@ import {
 import { useEffect, useState, useContext } from "react";
 import BugItems from "./BugItems";
 import Navbar from "./Navbar";
-import AuthContext from "../context/AuthProvider";
+import useAuth from "../hooks/useAuth";
 
 const Interface = () => {
+
+  const { setAvailableProgrammersList } = useAuth();
+
   const [bugsList, setBugsList] = useState([]);
   const [searchBy, setSearchBy] = useState("");
   const [fliterList, setFilterList] = useState([]);
+  //const [availableProgrammersList, setAvailableProgrammersList] = useState([]);
   const [id, setID] = useState("");
   const [severity, setSeverity] = useState("");
   const [date, setDate] = useState("");
-
-  const { setAuth } = useContext(AuthContext);
 
   useEffect(() => {
     setSearchBy("ID");
@@ -31,6 +33,11 @@ const Interface = () => {
       setBugsList(response.data);
       setFilterList(response.data);
     });
+    Axios.get("http://localhost:3001/getAllAvailableProgrammers").then(
+      (response) => {
+        setAvailableProgrammersList(response.data);
+      }
+    );
   }, []);
 
   useEffect(() => {
@@ -154,7 +161,9 @@ const Interface = () => {
               </Row>
             </Card.Body>
           </Card>
-          <BugItems bugsList={fliterList} />
+          <BugItems
+            bugsList={fliterList}
+          />
         </Col>
       </Row>
     </>

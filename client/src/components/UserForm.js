@@ -7,7 +7,7 @@ import {
   Col,
   FloatingLabel,
 } from "react-bootstrap";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 
 const UserForm = () => {
@@ -25,10 +25,6 @@ const UserForm = () => {
   const [procedure, setProcedure] = useState("");
   const [score, setScore] = useState(0);
   const [numClick, setNumClick] = useState(0);
-  // const [pref, setPref] = useState({
-  //     webcam: false
-  // });
-
   const [bugsList, setBugsList] = useState([]);
 
   useEffect(() => {
