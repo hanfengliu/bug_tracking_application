@@ -6,13 +6,20 @@ import {
   Row,
   Col,
   FloatingLabel,
+  OverlayTrigger,
+  Tooltip,
 } from "react-bootstrap";
 import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
 import Navbar from "./Navbar";
+import FormSubmitMessage from "./FormSubmitMessage";
+import useAuth from "../hooks/useAuth";
 
 const UserForm = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const { auth } = useAuth();
+  const [firstName, setFirstName] = useState(auth.firstName);
+  const [lastName, setLastName] = useState(auth.lastName);
   const [date, setDate] = useState("");
   const [year, setYear] = useState(0);
   const [month, setMonth] = useState(0);
@@ -26,6 +33,10 @@ const UserForm = () => {
   const [score, setScore] = useState(0);
   const [numClick, setNumClick] = useState(0);
   const [bugsList, setBugsList] = useState([]);
+  const [detail, setDetail] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+  const [status, setStatus] = useState(false);
 
   useEffect(() => {
     Axios.get("http://localhost:3001/getAllBugs").then((response) => {
@@ -69,9 +80,9 @@ const UserForm = () => {
     bugs.forEach((bug) => {
       bugString += bug + ";";
     });
-    console.log(bugsList);
-    console.log(score);
-    console.log(numClick);
+    // console.log(bugsList);
+    // console.log(score);
+    // console.log(numClick);
     var avgScore = score / numClick;
     var severity = "";
 
@@ -91,11 +102,33 @@ const UserForm = () => {
       software_bug_list: bugString,
       message: message,
       procedure: procedure,
-      avgScore: avgScore,
       severity: severity,
-    }).then((response) => {
-      console.log(response);
-    });
+    })
+      .then((res) => {
+        console.log(res.data);
+        setShowModal(true);
+        if (res.data.status === 200) {
+          setSubmitMessage(
+            "Bug Successfully Submitted. Thank you for your submission"
+          );
+          setStatus(true);
+        } else {
+          setSubmitMessage(
+            "Something went Wrong. Please try again later. We are sorry for any inconvenience."
+          );
+          setStatus(false);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        if (!err?.response) {
+          setShowModal(true);
+          setSubmitMessage(
+            "No Server Response. Please try again later. We are sorry for any inconvenience."
+          );
+          setStatus(false);
+        }
+      });
     clearForm(e);
   };
 
@@ -111,14 +144,20 @@ const UserForm = () => {
     setBugsList([]);
   };
 
+  const renderTooltip = (props) => (
+    <Tooltip id="button-tooltip" {...props}>
+      {detail ? "Hide Detailed Form" : "Display Detailed Form"}
+    </Tooltip>
+  );
+
   return (
     <Form
-      className="mx-auto mt-5"
+      className="mx-auto mt-5 mb-5"
       variant="bg-primary"
       style={{ width: "680px" }}
       onSubmit={addBug}
     >
-      <Navbar/>
+      <Navbar />
       <Row className="mb-3">
         <Form.Group as={Col}>
           <Form.Label>First Name</Form.Label>
@@ -128,6 +167,7 @@ const UserForm = () => {
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             required
+            disabled
           />
         </Form.Group>
         <Form.Group as={Col}>
@@ -138,6 +178,7 @@ const UserForm = () => {
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             required
+            disabled
           />
         </Form.Group>
       </Row>
@@ -180,21 +221,9 @@ const UserForm = () => {
         </Form.Group>
       </Row>
 
-      <Row className="mb-4">
-        <Form.Group as={Col}>
-          <Form.Label>Gug URL</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter the URL"
-            value={URL}
-            onChange={(e) => setURL(e.target.value)}
-          />
-        </Form.Group>
-      </Row>
-
-      <Row className="mb-3">
+      <Row>
         <Form.Label>Software Bug</Form.Label>
-        <Row className="mb-1">
+        <Row>
           <ul style={{ overflowY: "scroll", height: "200px" }}>
             {bugsList.map((bug) => (
               <Form.Check
@@ -212,7 +241,42 @@ const UserForm = () => {
         </Row>
       </Row>
 
-      <Row className="mb-4">
+      <Row>
+        <Col className="d-flex justify-content-end">
+          <OverlayTrigger
+            placement="left"
+            delay={{ show: 250, hide: 1000 }}
+            overlay={renderTooltip}
+          >
+            <Button
+              variant="light"
+              onClick={() => {
+                setDetail(!detail);
+              }}
+              className={detail ? "" : "mb-2"}
+            >
+              <FontAwesomeIcon
+                icon={detail ? faMinus : faPlus}
+                style={{ height: "10px" }}
+              />
+            </Button>
+          </OverlayTrigger>
+        </Col>
+      </Row>
+
+      <Row className={detail ? "mb-3" : " mb-3 d-none"}>
+        <Form.Group as={Col}>
+          <Form.Label>Gug URL</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter the URL"
+            value={URL}
+            onChange={(e) => setURL(e.target.value)}
+          />
+        </Form.Group>
+      </Row>
+
+      <Row className={detail ? "mb-4" : " mb-4 d-none"}>
         <Form.Group>
           <Form.Label>Error Message</Form.Label>
           <FloatingLabel controlId="floatingTextarea2" label="Message">
@@ -227,7 +291,7 @@ const UserForm = () => {
         </Form.Group>
       </Row>
 
-      <Row className="mb-3">
+      <Row className={detail ? "mb-3" : " mb-3 d-none"}>
         <Form.Group>
           <Form.Label>
             Please describe any procedure to replicate this bug
@@ -251,6 +315,14 @@ const UserForm = () => {
             </Button>
           </ButtonGroup>
         </Col>
+      </Row>
+      <Row>
+        <FormSubmitMessage
+          show={showModal}
+          onHide={() => setShowModal(false)}
+          submitMessage={submitMessage}
+          status={status}
+        />
       </Row>
     </Form>
   );

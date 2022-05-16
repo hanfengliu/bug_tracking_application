@@ -1,26 +1,36 @@
 import { Row, Col, Card, Button } from "react-bootstrap";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
-import VerticallyCenteredModal from "./VerticallyCenteredModal";
+import ManagerModal from "./ManagerModal";
+import ProgrammerModal from "./ProgrammerModal";
+import useAuth from "../hooks/useAuth";
 
 const BugItem = ({ bug }) => {
+  const { auth } = useAuth();
   const [detail, setDetail] = useState(false);
   const [reportedBugs, setReportedBugs] = useState([]);
   const [color, setColor] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [programmer, setProgrammer] = useState("N/A");
+  const [programmer, setProgrammer] = useState(bug.programmer);
+  const [manager, setManager] = useState(
+    bug.managerFirst + " " + bug.managerLast
+  );
+  const [severity, setSeverity] = useState(bug.severity);
+  const [status, setStatus] = useState(bug.status);
 
   useEffect(() => {
     setReportedBugs(bug.software_bug_list.split(";"));
-    if (bug.avgScore > 25) setColor("danger");
-    else if (bug.avgScore > 17) setColor("warning");
-    else setColor("success");
+    if (severity === "critical") setColor("danger");
+    else if (severity === "moderate") setColor("warning");
   }, []);
 
-  const changeProgrammer=(prog)=>{
-    setProgrammer(prog)
-  }
+  useEffect(() => {
+    if (severity !== "")
+      if (severity === "critical") setColor("danger");
+      else if (severity === "moderate") setColor("warning");
+      else setColor("success");
+  }, [severity]);
 
   return (
     <Card
@@ -31,9 +41,15 @@ const BugItem = ({ bug }) => {
     >
       <Card.Header>
         <Row>
-          <Col className="d-flex justify-content-center mt-2">{bug.id}</Col>
-          <Col className="d-flex justify-content-center mt-2">N/A</Col>
-          <Col className="d-flex justify-content-center mt-2">{programmer}</Col>
+          <Col className="d-flex justify-content-center mt-2 text-center">
+            {bug.id}
+          </Col>
+          <Col className="d-flex justify-content-center mt-2 text-center">
+            {status}
+          </Col>
+          <Col className="d-flex justify-content-center mt-2 text-center">
+            {auth.roles[0] === "manager" ? programmer : manager}
+          </Col>
           <Col className="d-flex justify-content-end">
             <Button
               variant="light"
@@ -102,19 +118,33 @@ const BugItem = ({ bug }) => {
       </Card.Body>
       <Card.Footer>
         <Row>
-          <Col>
+          {/* <Col>
             <small>Last updated 3 mins ago</small>
-          </Col>
+          </Col> */}
           <Col className="d-flex justify-content-end">
             <Button variant="primary" onClick={() => setShowModal(true)}>
               Edit
             </Button>
-            <VerticallyCenteredModal
-              show={showModal}
-              onHide={() => setShowModal(false)}
-              severity={bug.severity}
-              changeProgrammer={changeProgrammer}
-            />
+            {auth.roles[0] === "manager" ? (
+              <ManagerModal
+                show={showModal}
+                onHide={() => setShowModal(false)}
+                id={bug.id}
+                programmer={programmer}
+                severity={severity}
+                setProgrammer={setProgrammer}
+                setSeverity={setSeverity}
+                setStatus={setStatus}
+              />
+            ) : (
+              <ProgrammerModal
+                show={showModal}
+                onHide={() => setShowModal(false)}
+                id={bug.id}
+                status={status}
+                setStatus={setStatus}
+              />
+            )}
           </Col>
         </Row>
       </Card.Footer>

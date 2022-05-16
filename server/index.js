@@ -26,41 +26,14 @@ app.post("/create", (req, res) => {
   const day = req.body.day;
   const browser = req.body.browser;
   const operating_system = req.body.operating_system;
-  const url = req.body.url;
+  const url = req.body.url !== "" ? req.body.url : "N/A";
   const software_bug_list = req.body.software_bug_list;
-  const message = req.body.message;
-  const procedure = req.body.procedure;
-  const avgScore = req.body.avgScore;
+  const message = req.body.message !== "" ? req.body.message : "N/A";
+  const procedure = req.body.procedure !== "" ? req.body.procedure : "N/A";
   const severity = req.body.severity;
-  
-  // const reportedBugs = software_bug_list.split(";");
-  // let results = 0;
-
-  // reportedBugs.forEach((reportedBug) => {
-  //   if (reportedBug !== "") {
-  //     db.query(
-  //       "SELECT score FROM `bugs` WHERE bugName = ?",
-  //       [reportedBug],
-  //       (err, result) => {
-  //         if (err) {
-  //           console.log(err);
-  //         } else {
-  //           results += result[0].score;
-  //           console.log("inside"+reportedBug+results);
-  //         }
-  //       }
-  //     );
-  //   }
-  //   console.log("outside" + reportedBug + results);
-  // });
-
-  // //results /= reportedBugs.length - 1;
-  // console.log("last" + results);
-
-  // return;
 
   db.query(
-    "INSERT INTO `bugs_table` (`first_name`, `last_name`, `year`, `month`, `day`, `browser`, `operating_system`, `url`, `software_bug_list`, `message`, `procedure`, `avgScore`,`severity`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+    "INSERT INTO `bugs_table` (`first_name`, `last_name`, `year`, `month`, `day`, `browser`, `operating_system`, `url`, `software_bug_list`, `message`, `procedure`, `severity`,`programmer`,`status`, `managerFirst`, `managerLast`, `description`, `solution`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
     [
       first_name,
       last_name,
@@ -73,14 +46,25 @@ app.post("/create", (req, res) => {
       software_bug_list,
       message,
       procedure,
-      avgScore,
       severity,
+      "N/A",
+      "Pending",
+      "N/A",
+      "N/A",
+      "N/A",
+      "N/A",
     ],
     (err, result) => {
       if (err) {
-        console.log(err);
+        return res.send({
+          status: 500,
+          message: "An error occurred:" + err.message,
+        });
       } else {
-        res.send("Values Inserted");
+        return res.send({
+          status: 200,
+          message: "Values Inserted",
+        });
       }
     }
   );
@@ -239,10 +223,14 @@ app.post("/signIn", (req, res) => {
           console.log(result);
           if (result.length > 0) {
             console.log("programmer found");
+            console.log(result[0].id);
             return res.send({
               status: 200,
               message: "programmer found",
               roles: ["programmer"],
+              userName: result[0].programmer,
+              firstName: result[0].firstName,
+              lastName: result[0].lastName,
             });
           } else {
             console.log("programmer not found");
@@ -270,6 +258,9 @@ app.post("/signIn", (req, res) => {
               status: 200,
               message: "manager found",
               roles: ["manager"],
+              userName: result[0].manager,
+              firstName: result[0].firstName,
+              lastName: result[0].lastName,
             });
           } else {
             console.log("manager not found");
@@ -297,6 +288,9 @@ app.post("/signIn", (req, res) => {
               status: 200,
               message: "user found",
               roles: ["user"],
+              userName: result[0].user,
+              firstName: result[0].firstName,
+              lastName: result[0].lastName,
             });
           } else {
             console.log("user not found");
@@ -336,6 +330,85 @@ app.get("/getAllAvailableProgrammers", (req, res) => {
         console.log(err);
       } else {
         res.send(result);
+      }
+    }
+  );
+});
+
+app.post("/editBug", (req, res) => {
+  const id = req.body.id;
+  const first1 = req.body.first1;
+  const last1 = req.body.last1;
+  const first2 = req.body.first2;
+  const last2 = req.body.last2;
+  const severity = req.body.severity;
+  const first3 = first1 === "" ? "N/A" : req.body.first3;
+  const last3 = first1 === "" ? "N/A" : req.body.last3;
+  console.log(first1 + " " + last1);
+  console.log(first2 + " " + last2);
+  const status = first1 === "" ? "Pending" : "Investigating";
+  // console.log(first3 + " " + last3);
+  // return;
+  db.query(
+    "UPDATE `bugs_table` SET `severity` = ?, `programmer` = ?, `status` = ?, `managerFirst` = ?, `managerLast` = ? WHERE `id` = ?",
+    [severity, (first1 + " " + last1).trim(), status, first3, last3, id],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        db.query(
+          "UPDATE `programmers_table` SET `available` = ? WHERE `firstName` = ? AND `lastName` = ?",
+          [false, first1, last1],
+          (err, result) => {
+            if (err) {
+              console.log(err);
+            }
+          }
+        );
+        db.query(
+          "UPDATE `programmers_table` SET `available` = ? WHERE `firstName` = ? AND `lastName` = ?",
+          [true, first2, last2],
+          (err, result) => {
+            if (err) {
+              console.log(err);
+            }
+          }
+        );
+        res.send("Bug Edited");
+      }
+    }
+  );
+});
+
+app.get("/getAssignedBugs", (req, res) => {
+  db.query(
+    "SELECT * FROM `bugs_table` where programmer = ?",
+    [req.query["firstName"] + " " + req.query["lastName"]],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send(result);
+      }
+    }
+  );
+});
+
+app.post("/updateStatus", (req, res) => {
+  const id = req.body.id;
+  const status = req.body.status;
+  const description =
+    req.body.description === "" ? "N/A" : req.body.description;
+  const solution = req.body.solution === "" ? "N/A" : req.body.solution;
+
+  db.query(
+    "UPDATE `bugs_table` SET `status` = ?, `description` = ?, `solution` = ? WHERE `id` = ?",
+    [status, description, solution, id],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send("Status Updated");
       }
     }
   );

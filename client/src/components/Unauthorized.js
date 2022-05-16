@@ -7,9 +7,9 @@ const Unauthorized = () => {
   const navigate = useNavigate();
   const goBack = () => {
     if (auth?.roles?.includes("manager")) {
-      navigate("/Interface");
+      navigate("/ManagerInterface");
     } else if (auth?.roles?.includes("programmer")) {
-      navigate("/UserForm");
+      navigate("/ProgrammerInterface");
     } else if (auth?.roles?.includes("user")) {
       navigate("/UserForm");
     } else {

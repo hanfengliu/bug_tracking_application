@@ -1,6 +1,6 @@
 import Axios from "axios";
 import { Form, Button, ButtonGroup, Row, Col, Alert } from "react-bootstrap";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text } from "react-native";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
@@ -14,6 +14,18 @@ const SignIn = () => {
   const [showMessage, setShowMessage] = useState(false);
   const [color, setColor] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (auth?.roles?.includes("manager")) {
+      navigate("/ManagerInterface");
+    } else if (auth?.roles?.includes("programmer")) {
+      navigate("/ProgrammerInterface");
+    } else if (auth?.roles?.includes("user")) {
+      navigate("/UserForm");
+    } else {
+      navigate("/SignIn");
+    }
+  }, []);
 
   const logIn = (e) => {
     e.preventDefault();
@@ -34,15 +46,18 @@ const SignIn = () => {
           setColor("success");
           clearForm(e);
           const roles = res?.data?.roles;
-          setAuth({ email, password, roles });
-          console.log(auth?.roles);
+          const userName = res?.data?.userName;
+          const firstName = res?.data?.firstName;
+          const lastName = res?.data?.lastName;
+          setAuth({ email, password, roles, userName, firstName, lastName });
+          //console.log(auth?.roles);
           if (roles?.includes("manager")) {
-            navigate("/Interface");
+            navigate("/ManagerInterface");
           } else if (roles?.includes("programmer")) {
-            navigate("/UserForm");
+            navigate("/ProgrammerInterface");
           } else if (roles?.includes("user")) {
             navigate("/UserForm");
-          }else{
+          } else {
             navigate("/Unauthorized");
           }
         } else {
