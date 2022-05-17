@@ -1,8 +1,10 @@
 import Axios from "axios";
 import { Modal, Button, Form, FloatingLabel } from "react-bootstrap";
 import { useState, useEffect } from "react";
+import useAuth from "../hooks/useAuth";
 
 const ProgrammerModal = ({ show, onHide, id, status, setStatus }) => {
+  const { auth, setBugsList } = useAuth();
   const [newStatus, setNewStatus] = useState(status);
   const [changing, setChanging] = useState(false);
   const [description, setDescription] = useState("");
@@ -27,11 +29,21 @@ const ProgrammerModal = ({ show, onHide, id, status, setStatus }) => {
     if (changing)
       Axios.post("http://localhost:3001/updateStatus", {
         id: id,
+        firstName: auth.firstName,
+        lastName: auth.lastName,
         status: newStatus,
         description: description,
         solution: solution,
       }).then((res) => {
         console.log(res.data);
+        Axios.get("http://localhost:3001/getAssignedBugs", {
+          params: {
+            firstName: auth.firstName,
+            lastName: auth.lastName,
+          },
+        }).then((response) => {
+          setBugsList(response.data);
+        });
       });
   };
 

@@ -65,7 +65,7 @@ const BugItem = ({ bug }) => {
       <Card.Body>
         <Row>
           <Col>
-            <Card.Subtitle>Bugs:</Card.Subtitle>
+            <Card.Subtitle className="mb-3">Bugs:</Card.Subtitle>
             {reportedBugs.map((reportedBug) => (
               <Card.Text key={reportedBug}>{reportedBug}</Card.Text>
             ))}
@@ -118,9 +118,6 @@ const BugItem = ({ bug }) => {
       </Card.Body>
       <Card.Footer>
         <Row>
-          {/* <Col>
-            <small>Last updated 3 mins ago</small>
-          </Col> */}
           <Col className="d-flex justify-content-end">
             <Button variant="primary" onClick={() => setShowModal(true)}>
               Edit

@@ -266,7 +266,7 @@ const UserForm = () => {
 
       <Row className={detail ? "mb-3" : " mb-3 d-none"}>
         <Form.Group as={Col}>
-          <Form.Label>Gug URL</Form.Label>
+          <Form.Label>Bug URL</Form.Label>
           <Form.Control
             type="text"
             placeholder="Enter the URL"

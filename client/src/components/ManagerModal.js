@@ -13,8 +13,12 @@ const ManagerModal = ({
   setSeverity,
   setStatus,
 }) => {
-  const { auth, availableProgrammersList, setAvailableProgrammersList, setBugsList } =
-    useAuth();
+  const {
+    auth,
+    availableProgrammersList,
+    setAvailableProgrammersList,
+    setBugsList,
+  } = useAuth();
   const [currentProgrammer, setCurrentProgrammer] = useState(programmer);
   const [origionalProgrammer, setOriginalProgrammer] = useState(programmer);
   const [newSeverity, setNewSeverity] = useState(severity);

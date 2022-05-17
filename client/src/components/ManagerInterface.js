@@ -23,6 +23,7 @@ const ManagerInterface = () => {
   const [id, setID] = useState("");
   const [severity, setSeverity] = useState("");
   const [date, setDate] = useState("");
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     setSearchBy("ID");
@@ -39,7 +40,8 @@ const ManagerInterface = () => {
   }, []);
 
   useEffect(() => {
-    const filter = () => {
+    
+    const filter = () => {console.log(severity)
       setFilterList(
         searchBy === "Date"
           ? bugsList.filter((bug) => {
@@ -51,27 +53,29 @@ const ManagerInterface = () => {
                   bug.day.toString() +
                   "/" +
                   bug.year.toString()
-                ).includes(date)
+                ).includes(date) &&
+                bug.status.includes(status)
               );
             })
           : bugsList.filter((bug) => {
               return (
                 bug.severity.includes(severity) &&
-                bug.id.toString().includes(id)
+                bug.id.toString().includes(id) &&
+                bug.status.includes(status)
               );
             })
       );
     };
 
     filter();
-  }, [severity, id, date]);
+  }, [severity, status, id, date]);
 
   return (
     <section className="mx-auto" fluid="md" style={{ maxWidth: "800px" }}>
       <Navbar />
       <Row>
         <Col sm="3">
-          <Filterbar setSeverity={setSeverity} />
+          <Filterbar setSeverity={setSeverity} setStatus={setStatus} />
         </Col>
         <Col sm="9">
           <Searchbar

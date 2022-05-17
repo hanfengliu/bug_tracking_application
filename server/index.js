@@ -313,13 +313,16 @@ app.get("/getAllBugs", (req, res) => {
 });
 
 app.get("/getSubmitedBugs", (req, res) => {
-  db.query("SELECT * FROM `bugs_table`", (err, result) => {
-    if (err) {
-      console.log(err);
-    } else {
-      res.send(result);
+  db.query(
+    "SELECT * FROM `bugs_table` ORDER BY CASE severity WHEN 'critical' THEN 0 WHEN 'moderate' THEN 1 WHEN 'minor' THEN 2 END, id",
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send(result);
+      }
     }
-  });
+  );
 });
 
 app.get("/getAllAvailableProgrammers", (req, res) => {
@@ -396,6 +399,8 @@ app.get("/getAssignedBugs", (req, res) => {
 
 app.post("/updateStatus", (req, res) => {
   const id = req.body.id;
+  const firstName = req.body.firstName;
+  const lastName = req.body.lastName;
   const status = req.body.status;
   const description =
     req.body.description === "" ? "N/A" : req.body.description;
@@ -408,6 +413,16 @@ app.post("/updateStatus", (req, res) => {
       if (err) {
         console.log(err);
       } else {
+        if (status === "Fixed")
+          db.query(
+            "UPDATE `programmers_table` SET `available` = ? WHERE `firstName` = ? AND `lastName` = ?",
+            [true, firstName, lastName],
+            (err, result) => {
+              if (err) {
+                console.log(err);
+              }
+            }
+          );
         res.send("Status Updated");
       }
     }
