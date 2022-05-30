@@ -8,7 +8,6 @@ import RequireAuth from "./components/RequireAuth";
 import Layout from "./components/Layout";
 
 import { Route, Routes, Navigate } from "react-router-dom";
-import "./App.css";
 
 function App() {
   return (

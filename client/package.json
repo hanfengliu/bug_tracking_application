@@ -1,5 +1,5 @@
 {
-  "name": "cisc4900",
+  "name": "bug_tracking_application",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
