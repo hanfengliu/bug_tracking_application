@@ -109,10 +109,6 @@ const SignUp = () => {
 
   useEffect(() => {
     setShowMessage(false);
-  }, [email]);
-
-  useEffect(() => {
-    setShowMessage(false);
   }, []);
 
   useEffect(() => {

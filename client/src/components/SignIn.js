@@ -1,15 +1,32 @@
 import Axios from "axios";
-import { Form, Button, ButtonGroup, Row, Col, Alert } from "react-bootstrap";
+import {
+  Form,
+  Button,
+  ButtonGroup,
+  Row,
+  Col,
+  Alert,
+  InputGroup,
+} from "react-bootstrap";
 import { useState, useEffect } from "react";
 import { View, Text } from "react-native";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEyeSlash,
+  faEye,
+  faLock,
+  faLockOpen,
+  faEnvelope,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 
 const SignIn = () => {
   const { auth, setAuth } = useAuth();
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("");  const [showPass, setShowPass] = useState(false);
   const [message, setMessage] = useState("");
   const [showMessage, setShowMessage] = useState(false);
   const [color, setColor] = useState("");
@@ -92,26 +109,45 @@ const SignIn = () => {
       </Alert>
       <Row className="mb-3">
         <Form.Group as={Col}>
-          <Form.Label>Email</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter your Email Address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <Form.Label>Email address</Form.Label>
+          <InputGroup>
+            <InputGroup.Text variant="outline-light">
+              <FontAwesomeIcon icon={faEnvelope} />
+            </InputGroup.Text>
+            <Form.Control
+              type="text"
+              placeholder="Enter your Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{ "box-shadow": "none" }}
+              required
+            />
+          </InputGroup>
         </Form.Group>
       </Row>
       <Row className="mb-3">
         <Form.Group as={Col}>
           <Form.Label>Password</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Enter your Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <InputGroup>
+            <InputGroup.Text variant="outline-light">
+              <FontAwesomeIcon icon={showPass ? faLockOpen : faLock} />
+            </InputGroup.Text>
+            <Form.Control
+              type={showPass ? "text" : "password"}
+              placeholder="Enter your Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ "box-shadow": "none" }}
+              required
+            />
+            <Button
+              variant="outline-secondary"
+              onClick={() => setShowPass(!showPass)}
+              style={{ "box-shadow": "none" }}
+            >
+              <FontAwesomeIcon icon={showPass ? faEye : faEyeSlash} />
+            </Button>
+          </InputGroup>
         </Form.Group>
       </Row>
       <Row>
@@ -122,6 +158,7 @@ const SignIn = () => {
               type="submit"
               disabled={email === "" || password === ""}
               onClick={logIn}
+              style={{ "box-shadow": "none" }}
             >
               Submit
             </Button>
@@ -147,7 +184,9 @@ const SignIn = () => {
         <Col>
           <Link to="/SignUp" style={{ textDecoration: "none", color: "white" }}>
             <ButtonGroup className="d-flex">
-              <Button variant="success">SignUp</Button>
+              <Button variant="success" style={{ "box-shadow": "none" }}>
+                SignUp
+              </Button>
             </ButtonGroup>
           </Link>
         </Col>
