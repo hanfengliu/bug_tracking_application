@@ -14,6 +14,17 @@ const db = mysql.createConnection({
   database: "bugs_tracking",
 });
 
+const queryPromise = (query, fields) => {
+  return new Promise((resolve, reject) => {
+    db.query(query, fields, (err, result) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(result);
+    });
+  });
+};
+
 app.get("/", (req, res) => {
   app.use(express.static(path.join(__dirname, "../client/public/index.html")));
 });
@@ -31,76 +42,72 @@ app.post("/create", (req, res) => {
   const procedure = req.body.procedure !== "" ? req.body.procedure : "N/A";
   const severity = req.body.severity;
   const date = new Date();
-  let maxId;
 
   const sql_1 =
     "INSERT INTO `submitted_bugs_table` (`userId`, `year`, `month`, `day`, `browser`, `os`, `severity`, `url`, `message`, `procedure`,`status`, `subYear`, `subMonth`, `subDay`, `subHour`, `subMin`, `subSec`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-  const sql_2 = "SELECT MAX(submittedBugId) FROM submitted_bugs_table";
+  const feild_1 = [
+    id,
+    year,
+    month,
+    day,
+    browser,
+    os,
+    severity,
+    url,
+    message,
+    procedure,
+    "Pending",
+    date.getFullYear(),
+    date.getMonth(),
+    date.getUTCDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+  ];
+  const sql_2 = "SELECT MAX(submittedBugId) FROM `submitted_bugs_table`";
   const sql_3 =
     "INSERT INTO `submitted_bugs_list` (`submittedBugId`, `submittedBugDesc`) VALUES (?,?)";
 
-  db.query(
-    sql_1,
-    [
-      id,
-      year,
-      month,
-      day,
-      browser,
-      os,
-      severity,
-      url,
-      message,
-      procedure,
-      "Pending",
-      date.getFullYear(),
-      date.getMonth(),
-      date.getUTCDate(),
-      date.getHours(),
-      date.getMinutes(),
-      date.getSeconds(),
-    ],
-    (err, result) => {
-      if (err) {
-        return res.status(500).send({
-          message: "An error occurred:" + err.message,
-        });
-      }
-    }
-  );
-
-  db.query(sql_2, (err, result) => {
-    if (err) {
+  queryPromise(sql_1, feild_1)
+    .then(() => {
+      console.log("inserted");
+    })
+    .catch((err) => {
       return res.status(500).send({
         message: "An error occurred:" + err.message,
       });
-    } else {
-      maxId = result[0]["MAX(submittedBugId)"];
-      const insert = async () => {
+    });
+
+  queryPromise(sql_2)
+    .then((result) => {
+      console.log(result[0]["MAX(submittedBugId)"]);
+      const insertBugList = async (list) => {
         await Promise.all(
-          bugs.map((bug) => {
-            return queryPromise(sql_3, [maxId, bug]);
+          list.map((item) => {
+            return queryPromise(sql_3, [
+              result[0]["MAX(submittedBugId)"],
+              item,
+            ]);
           })
         );
       };
-      insert();
-    }
-  });
-
-  const queryPromise = (query, fields) => {
-    return new Promise((resolve, reject) => {
-      db.query(query, fields, (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(result);
+      insertBugList(bugs)
+        .then(() => {
+          return res.status(200).send({
+            message: "Values Inserted",
+          });
+        })
+        .catch((err) => {
+          return res.status(500).send({
+            message: "An error occurred:" + err.message,
+          });
+        });
+    })
+    .catch((err) => {
+      return res.status(500).send({
+        message: "An error occurred:" + err.message,
       });
     });
-  };
-
-  return res.status(200).send({
-    message: "Values Inserted",
-  });
 });
 
 app.post("/signUp", (req, res) => {

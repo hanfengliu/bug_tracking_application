@@ -169,7 +169,11 @@ const UserForm = () => {
               delay={{ show: 250, hide: 400 }}
               overlay={<Tooltip>Required</Tooltip>}
             >
-              <Button className="p-0" variant="white">
+              <Button
+                className="p-0"
+                variant="white"
+                style={{ boxShadow: "none", cursor: "default" }}
+              >
                 Bug Discover Date:
               </Button>
             </OverlayTrigger>
@@ -192,7 +196,11 @@ const UserForm = () => {
               delay={{ show: 250, hide: 400 }}
               overlay={<Tooltip>Required</Tooltip>}
             >
-              <Button className="p-0" variant="white">
+              <Button
+                className="p-0"
+                variant="white"
+                style={{ boxShadow: "none", cursor: "default" }}
+              >
                 Brower:
               </Button>
             </OverlayTrigger>
@@ -219,7 +227,11 @@ const UserForm = () => {
               delay={{ show: 250, hide: 400 }}
               overlay={<Tooltip>Required</Tooltip>}
             >
-              <Button className="p-0" variant="white">
+              <Button
+                className="p-0"
+                variant="white"
+                style={{ boxShadow: "none", cursor: "default" }}
+              >
                 Operating System:
               </Button>
             </OverlayTrigger>
@@ -246,7 +258,11 @@ const UserForm = () => {
             delay={{ show: 250, hide: 400 }}
             overlay={<Tooltip>Required</Tooltip>}
           >
-            <Button className="p-0" variant="white">
+            <Button
+              className="p-0"
+              variant="white"
+              style={{ boxShadow: "none", cursor: "default" }}
+            >
               Software Bug:
             </Button>
           </OverlayTrigger>
