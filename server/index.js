@@ -11,7 +11,7 @@ const db = mysql.createConnection({
   user: "root",
   host: "localhost",
   password: "password",
-  database: "bugs_tracking_system",
+  database: "bugs_tracking",
 });
 
 app.get("/", (req, res) => {
@@ -19,55 +19,88 @@ app.get("/", (req, res) => {
 });
 
 app.post("/create", (req, res) => {
-  const first_name = req.body.first_name;
-  const last_name = req.body.last_name;
+  const id = req.body.id;
   const year = req.body.year;
-  const month = req.body.month;
+  const month = req.body.month + 1;
   const day = req.body.day;
   const browser = req.body.browser;
-  const operating_system = req.body.operating_system;
+  const os = req.body.os;
   const url = req.body.url !== "" ? req.body.url : "N/A";
-  const software_bug_list = req.body.software_bug_list;
+  const bugs = JSON.parse(req.body.bugs);
   const message = req.body.message !== "" ? req.body.message : "N/A";
   const procedure = req.body.procedure !== "" ? req.body.procedure : "N/A";
   const severity = req.body.severity;
+  const date = new Date();
+  let maxId;
+
+  const sql_1 =
+    "INSERT INTO `submitted_bugs_table` (`userId`, `year`, `month`, `day`, `browser`, `os`, `severity`, `url`, `message`, `procedure`,`status`, `subYear`, `subMonth`, `subDay`, `subHour`, `subMin`, `subSec`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+  const sql_2 = "SELECT MAX(submittedBugId) FROM submitted_bugs_table";
+  const sql_3 =
+    "INSERT INTO `submitted_bugs_list` (`submittedBugId`, `submittedBugDesc`) VALUES (?,?)";
 
   db.query(
-    "INSERT INTO `bugs_table` (`first_name`, `last_name`, `year`, `month`, `day`, `browser`, `operating_system`, `url`, `software_bug_list`, `message`, `procedure`, `severity`,`programmer`,`status`, `managerFirst`, `managerLast`, `description`, `solution`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+    sql_1,
     [
-      first_name,
-      last_name,
+      id,
       year,
-      month + 1,
+      month,
       day,
       browser,
-      operating_system,
+      os,
+      severity,
       url,
-      software_bug_list,
       message,
       procedure,
-      severity,
-      "N/A",
       "Pending",
-      "N/A",
-      "N/A",
-      "N/A",
-      "N/A",
+      date.getFullYear(),
+      date.getMonth(),
+      date.getUTCDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds(),
     ],
     (err, result) => {
       if (err) {
-        return res.send({
-          status: 500,
+        return res.status(500).send({
           message: "An error occurred:" + err.message,
-        });
-      } else {
-        return res.send({
-          status: 200,
-          message: "Values Inserted",
         });
       }
     }
   );
+
+  db.query(sql_2, (err, result) => {
+    if (err) {
+      return res.status(500).send({
+        message: "An error occurred:" + err.message,
+      });
+    } else {
+      maxId = result[0]["MAX(submittedBugId)"];
+      const insert = async () => {
+        await Promise.all(
+          bugs.map((bug) => {
+            return queryPromise(sql_3, [maxId, bug]);
+          })
+        );
+      };
+      insert();
+    }
+  });
+
+  const queryPromise = (query, fields) => {
+    return new Promise((resolve, reject) => {
+      db.query(query, fields, (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result);
+      });
+    });
+  };
+
+  return res.status(200).send({
+    message: "Values Inserted",
+  });
 });
 
 app.post("/signUp", (req, res) => {
@@ -228,6 +261,7 @@ app.post("/signIn", (req, res) => {
               status: 200,
               message: "programmer found",
               roles: ["programmer"],
+              id: result[0].programmerId,
               userName: result[0].programmer,
               firstName: result[0].firstName,
               lastName: result[0].lastName,
@@ -258,6 +292,7 @@ app.post("/signIn", (req, res) => {
               status: 200,
               message: "manager found",
               roles: ["manager"],
+              id: result[0].managerId,
               userName: result[0].manager,
               firstName: result[0].firstName,
               lastName: result[0].lastName,
@@ -288,6 +323,7 @@ app.post("/signIn", (req, res) => {
               status: 200,
               message: "user found",
               roles: ["user"],
+              id: result[0].userId,
               userName: result[0].user,
               firstName: result[0].firstName,
               lastName: result[0].lastName,

@@ -18,8 +18,6 @@ import useAuth from "../hooks/useAuth";
 
 const UserForm = () => {
   const { auth } = useAuth();
-  const [firstName, setFirstName] = useState(auth.firstName);
-  const [lastName, setLastName] = useState(auth.lastName);
   const [date, setDate] = useState("");
   const [year, setYear] = useState(0);
   const [month, setMonth] = useState(0);
@@ -30,6 +28,7 @@ const UserForm = () => {
   const [bugs, setBugs] = useState([]);
   const [message, setMessage] = useState("");
   const [procedure, setProcedure] = useState("");
+  const [severity, setSeverity] = useState("");
   const [score, setScore] = useState(0);
   const [numClick, setNumClick] = useState(0);
   const [bugsList, setBugsList] = useState([]);
@@ -75,31 +74,21 @@ const UserForm = () => {
 
   const addBug = (e) => {
     e.preventDefault();
-    let bugString = "";
 
-    bugs.forEach((bug) => {
-      bugString += bug + ";";
-    });
-    // console.log(bugsList);
-    // console.log(score);
-    // console.log(numClick);
     var avgScore = score / numClick;
-    var severity = "";
-
-    if (avgScore > 25) severity = "critical";
-    else if (avgScore > 17) severity = "moderate";
-    else severity = "minor";
+    if (avgScore > 25) setSeverity("critical");
+    else if (avgScore > 17) setSeverity("moderate");
+    else setSeverity("minor");
 
     Axios.post("http://localhost:3001/create", {
-      first_name: firstName,
-      last_name: lastName,
+      id: auth.id,
       year: year,
       month: month,
       day: day,
       browser: browser,
-      operating_system: os,
+      os: os,
       url: URL,
-      software_bug_list: bugString,
+      bugs: JSON.stringify(bugs),
       message: message,
       procedure: procedure,
       severity: severity,
@@ -107,35 +96,32 @@ const UserForm = () => {
       .then((res) => {
         console.log(res.data);
         setShowModal(true);
-        if (res.data.status === 200) {
+        if (res.status === 200) {
           setSubmitMessage(
             "Bug Successfully Submitted. Thank you for your submission"
           );
           setStatus(true);
-        } else {
-          setSubmitMessage(
-            "Something went Wrong. Please try again later. We are sorry for any inconvenience."
-          );
-          setStatus(false);
         }
       })
       .catch((err) => {
         console.log(err);
+        setShowModal(true);
+        setStatus(false);
         if (!err?.response) {
-          setShowModal(true);
           setSubmitMessage(
             "No Server Response. Please try again later. We are sorry for any inconvenience."
           );
-          setStatus(false);
+        } else if (err?.response?.status === 500) {
+          setSubmitMessage(
+            "Something went Wrong. Please try again later. We are sorry for any inconvenience."
+          );
         }
       });
-    clearForm(e);
+    //clearForm(e);
   };
 
   const clearForm = (e) => {
     e.target.reset();
-    setFirstName("");
-    setLastName("");
     setDate("");
     setURL("");
     setMessage("");
@@ -143,12 +129,6 @@ const UserForm = () => {
     setBugs([]);
     setBugsList([]);
   };
-
-  const renderTooltip = (props) => (
-    <Tooltip id="button-tooltip" {...props}>
-      {detail ? "Hide Detailed Form" : "Display Detailed Form"}
-    </Tooltip>
-  );
 
   return (
     <Form
@@ -164,8 +144,7 @@ const UserForm = () => {
           <Form.Control
             type="text"
             placeholder="Enter your First Name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            value={auth.firstName}
             required
             disabled
           />
@@ -175,8 +154,7 @@ const UserForm = () => {
           <Form.Control
             type="text"
             placeholder="Enter your Last Name"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            value={auth.lastName}
             required
             disabled
           />
@@ -185,11 +163,22 @@ const UserForm = () => {
 
       <Row className="mb-3">
         <Form.Group>
-          <Form.Label>Bug Discover Date:</Form.Label>
+          <Form.Label>
+            <OverlayTrigger
+              placement="right"
+              delay={{ show: 250, hide: 400 }}
+              overlay={<Tooltip>Required</Tooltip>}
+            >
+              <Button className="p-0" variant="white">
+                Bug Discover Date:
+              </Button>
+            </OverlayTrigger>
+          </Form.Label>
           <Form.Control
             type="date"
             value={date}
             onChange={(e) => convertTime(e.target.value)}
+            style={{ boxShadow: "none" }}
             required
           />
         </Form.Group>
@@ -197,8 +186,22 @@ const UserForm = () => {
 
       <Row className="mb-3">
         <Form.Group as={Col}>
-          <Form.Label>Brower</Form.Label>
-          <Form.Select onChange={(e) => setBrowser(e.target.value)} required>
+          <Form.Label>
+            <OverlayTrigger
+              placement="right"
+              delay={{ show: 250, hide: 400 }}
+              overlay={<Tooltip>Required</Tooltip>}
+            >
+              <Button className="p-0" variant="white">
+                Brower:
+              </Button>
+            </OverlayTrigger>
+          </Form.Label>
+          <Form.Select
+            onChange={(e) => setBrowser(e.target.value)}
+            style={{ boxShadow: "none" }}
+            required
+          >
             <option value="">Select your Brower</option>
             <option value="Google Chrome">Google Chrome</option>
             <option value="Internet Exploer">Internet Exploer</option>
@@ -208,9 +211,24 @@ const UserForm = () => {
             <option value="Opera">Opera</option>
           </Form.Select>
         </Form.Group>
+
         <Form.Group as={Col}>
-          <Form.Label>Operating System</Form.Label>
-          <Form.Select onChange={(e) => setOS(e.target.value)} required>
+          <Form.Label>
+            <OverlayTrigger
+              placement="right"
+              delay={{ show: 250, hide: 400 }}
+              overlay={<Tooltip>Required</Tooltip>}
+            >
+              <Button className="p-0" variant="white">
+                Operating System:
+              </Button>
+            </OverlayTrigger>
+          </Form.Label>
+          <Form.Select
+            onChange={(e) => setOS(e.target.value)}
+            style={{ boxShadow: "none" }}
+            required
+          >
             <option value="">Select your Operating System</option>
             <option value="Window 11">Window 11</option>
             <option value="Window 10">Window 10</option>
@@ -222,23 +240,32 @@ const UserForm = () => {
       </Row>
 
       <Row>
-        <Form.Label>Software Bug</Form.Label>
-        <Row>
-          <ul style={{ overflowY: "scroll", height: "200px" }}>
-            {bugsList.map((bug) => (
-              <Form.Check
-                key={bug.ID}
-                type="checkbox"
-                name={bug.bugName}
-                label={bug.bugName}
-                defaultChecked={false}
-                onChange={(e) => {
-                  changeBugList(e, bug.bugName, bug.score);
-                }}
-              />
-            ))}
-          </ul>
-        </Row>
+        <Form.Label>
+          <OverlayTrigger
+            placement="right"
+            delay={{ show: 250, hide: 400 }}
+            overlay={<Tooltip>Required</Tooltip>}
+          >
+            <Button className="p-0" variant="white">
+              Software Bug:
+            </Button>
+          </OverlayTrigger>
+        </Form.Label>
+        <Form.Group style={{ overflowY: "scroll", height: "200px" }}>
+          {bugsList.map((bug) => (
+            <Form.Check
+              key={bug.bugId}
+              type="checkbox"
+              name={bug.bugName}
+              label={bug.bugName}
+              defaultChecked={false}
+              onChange={(e) => {
+                changeBugList(e, bug.bugName, bug.score);
+              }}
+              style={{ boxShadow: "none" }}
+            />
+          ))}
+        </Form.Group>
       </Row>
 
       <Row>
@@ -246,13 +273,18 @@ const UserForm = () => {
           <OverlayTrigger
             placement="left"
             delay={{ show: 250, hide: 1000 }}
-            overlay={renderTooltip}
+            overlay={
+              <Tooltip>
+                {detail ? "Hide Detailed Form" : "Display Detailed Form"}
+              </Tooltip>
+            }
           >
             <Button
               variant="light"
               onClick={() => {
                 setDetail(!detail);
               }}
+              style={{ boxShadow: "none" }}
               className={detail ? "" : "mb-2"}
             >
               <FontAwesomeIcon
@@ -272,6 +304,7 @@ const UserForm = () => {
             placeholder="Enter the URL"
             value={URL}
             onChange={(e) => setURL(e.target.value)}
+            style={{ boxShadow: "none" }}
           />
         </Form.Group>
       </Row>
@@ -285,7 +318,7 @@ const UserForm = () => {
               placeholder="Enter the Message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              style={{ height: "100px" }}
+              style={{ height: "100px", boxShadow: "none" }}
             />
           </FloatingLabel>
         </Form.Group>
@@ -302,7 +335,7 @@ const UserForm = () => {
               placeholder="Enter the URL"
               value={procedure}
               onChange={(e) => setProcedure(e.target.value)}
-              style={{ height: "200px" }}
+              style={{ height: "200px", boxShadow: "none" }}
             />
           </FloatingLabel>
         </Form.Group>
@@ -310,7 +343,15 @@ const UserForm = () => {
       <Row>
         <Col>
           <ButtonGroup className="d-flex">
-            <Button variant="primary" type="submit">
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={
+                date === "" || browser === "" || os === "" || numClick <= 0
+                  ? true
+                  : false
+              }
+            >
               Submit
             </Button>
           </ButtonGroup>

@@ -19,7 +19,8 @@ import {
   faEnvelope,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,10}$/;
 const PWD_REGEX =
@@ -27,6 +28,9 @@ const PWD_REGEX =
 const EML_REGEX = /^[a-z0-9]+@[a-z]+\.[a-z]{2,3}$/;
 
 const SignUp = () => {
+  const { auth } = useAuth();
+  const navigate = useNavigate();
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [fullName, setValidFullName] = useState(false);
@@ -46,6 +50,18 @@ const SignUp = () => {
   const [message, setMessage] = useState("");
   const [showMessage, setShowMessage] = useState(false);
   const [color, setColor] = useState("");
+
+  useEffect(() => {
+    if (auth?.roles?.includes("manager")) {
+      navigate("/ManagerInterface");
+    } else if (auth?.roles?.includes("programmer")) {
+      navigate("/ProgrammerInterface");
+    } else if (auth?.roles?.includes("user")) {
+      navigate("/UserForm");
+    } else {
+      navigate("/SignUp");
+    }
+  }, []);
 
   useEffect(() => {
     setValidFullName(
@@ -183,7 +199,7 @@ const SignUp = () => {
             placeholder="Enter your First Name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            style={{ "box-shadow": "none" }}
+            style={{ "boxShadow": "none" }}
             required
           />
         </Form.Group>
@@ -194,7 +210,7 @@ const SignUp = () => {
             placeholder="Enter your Last Name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            style={{ "box-shadow": "none" }}
+            style={{ "boxShadow": "none" }}
             required
           />
         </Form.Group>
@@ -223,7 +239,7 @@ const SignUp = () => {
               placeholder="Enter your User name:"
               value={user}
               onChange={(e) => setUser(e.target.value)}
-              style={{ "box-shadow": "none" }}
+              style={{ "boxShadow": "none" }}
               required
             />
           </InputGroup>
@@ -252,7 +268,7 @@ const SignUp = () => {
               placeholder="Enter your email:"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={{ "box-shadow": "none" }}
+              style={{ "boxShadow": "none" }}
               required
             />
           </InputGroup>
@@ -292,7 +308,7 @@ const SignUp = () => {
               placeholder="Enter your password:"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={{ "box-shadow": "none" }}
+              style={{ "boxShadow": "none" }}
               required
             />
             <Button
@@ -338,7 +354,7 @@ const SignUp = () => {
               placeholder="Comfired your password:"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              style={{ "box-shadow": "none" }}
+              style={{ "boxShadow": "none" }}
               required
             />
             <Button
@@ -373,7 +389,7 @@ const SignUp = () => {
                   ? true
                   : false
               }
-              style={{ "box-shadow": "none" }}
+              style={{ "boxShadow": "none" }}
             >
               Submit
             </Button>
@@ -384,7 +400,7 @@ const SignUp = () => {
         <Col>
           <Link to="/SignIn" style={{ textDecoration: "none" }}>
             <ButtonGroup className="d-flex">
-              <Button variant="secondary" style={{ "box-shadow": "none" }}>
+              <Button variant="secondary" style={{ "boxShadow": "none" }}>
                 Return
               </Button>
             </ButtonGroup>

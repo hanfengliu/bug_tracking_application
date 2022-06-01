@@ -19,14 +19,14 @@ import {
   faLock,
   faLockOpen,
   faEnvelope,
-  faUser,
 } from "@fortawesome/free-solid-svg-icons";
 
 const SignIn = () => {
   const { auth, setAuth } = useAuth();
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");  const [showPass, setShowPass] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [message, setMessage] = useState("");
   const [showMessage, setShowMessage] = useState(false);
   const [color, setColor] = useState("");
@@ -63,10 +63,11 @@ const SignIn = () => {
           setColor("success");
           clearForm(e);
           const roles = res?.data?.roles;
+          const id = res?.data?.id;
           const userName = res?.data?.userName;
           const firstName = res?.data?.firstName;
           const lastName = res?.data?.lastName;
-          setAuth({ email, password, roles, userName, firstName, lastName });
+          setAuth({ email, password, roles,id, userName, firstName, lastName });
           //console.log(auth?.roles);
           if (roles?.includes("manager")) {
             navigate("/ManagerInterface");
@@ -119,7 +120,7 @@ const SignIn = () => {
               placeholder="Enter your Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={{ "box-shadow": "none" }}
+              style={{ boxShadow: "none" }}
               required
             />
           </InputGroup>
@@ -137,13 +138,13 @@ const SignIn = () => {
               placeholder="Enter your Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={{ "box-shadow": "none" }}
+              style={{ boxShadow: "none" }}
               required
             />
             <Button
               variant="outline-secondary"
               onClick={() => setShowPass(!showPass)}
-              style={{ "box-shadow": "none" }}
+              style={{ boxShadow: "none" }}
             >
               <FontAwesomeIcon icon={showPass ? faEye : faEyeSlash} />
             </Button>
@@ -158,7 +159,7 @@ const SignIn = () => {
               type="submit"
               disabled={email === "" || password === ""}
               onClick={logIn}
-              style={{ "box-shadow": "none" }}
+              style={{ boxShadow: "none" }}
             >
               Submit
             </Button>
@@ -184,7 +185,7 @@ const SignIn = () => {
         <Col>
           <Link to="/SignUp" style={{ textDecoration: "none", color: "white" }}>
             <ButtonGroup className="d-flex">
-              <Button variant="success" style={{ "box-shadow": "none" }}>
+              <Button variant="success" style={{ boxShadow: "none" }}>
                 SignUp
               </Button>
             </ButtonGroup>
