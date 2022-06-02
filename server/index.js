@@ -210,13 +210,14 @@ app.post("/signIn", (req, res) => {
 });
 
 app.get("/getAllBugs", (req, res) => {
-  db.query("SELECT * FROM `bugs`", (err, result) => {
-    if (err) {
+  const sql = "SELECT * FROM `bugs`";
+  queryPromise(sql)
+    .then((result) => {
+      res.status(200).send(result);
+    })
+    .catch((err) => {
       console.log(err);
-    } else {
-      res.send(result);
-    }
-  });
+    });
 });
 
 app.get("/getSubmitedBugs", (req, res) => {
