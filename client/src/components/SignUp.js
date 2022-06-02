@@ -22,7 +22,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
-const USER_REGEX = /^[A-z][A-z0-9-_]{3,10}$/;
+const USER_REGEX = /^[A-z][A-z0-9]{3,10}$/;
 const PWD_REGEX =
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[-+_!@#$%^&*.,?]).{8,24}$/;
 const EML_REGEX = /^[a-z0-9]+@[a-z]+\.[a-z]{2,3}$/;
@@ -75,8 +75,11 @@ const SignUp = () => {
       const userList = userRef.current;
       if (/^[a-zA-Z].*/.test(user)) userList.children[0].style.color = "green";
       else userList.children[0].style.color = "";
-      if (/^.{4,10}$/.test(user)) userList.children[1].style.color = "green";
+      if (/^[a-zA-Z0-9]*$/.test(user))
+        userList.children[1].style.color = "green";
       else userList.children[1].style.color = "";
+      if (/^.{4,10}$/.test(user)) userList.children[2].style.color = "green";
+      else userList.children[2].style.color = "";
     }
   }, [user, userRef]);
 
@@ -222,7 +225,7 @@ const SignUp = () => {
         <Alert.Heading>Invalid Name</Alert.Heading>
         <ListGroup variant="flush" className="mb-3">
           <ListGroup.Item variant="danger">
-            First and last must be all letters
+            First and last name must be all letters
           </ListGroup.Item>
         </ListGroup>
       </Alert>
@@ -248,8 +251,9 @@ const SignUp = () => {
         <Alert.Heading>Invalid User name</Alert.Heading>
         <ListGroup variant="flush" ref={userRef} className="mb-3">
           <ListGroup.Item variant="danger">
-            First must be a letter
+            First character must be a letter
           </ListGroup.Item>
+          <ListGroup.Item variant="danger">No special character</ListGroup.Item>
           <ListGroup.Item variant="danger">
             At least 4 and at most 10 characters
           </ListGroup.Item>
