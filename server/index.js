@@ -116,128 +116,53 @@ app.post("/signUp", (req, res) => {
   const lastName = req.body.lastName;
   const user = req.body.user;
   const password = req.body.password;
-  const role = email.substring(
-    email.lastIndexOf("@") + 1,
-    email.lastIndexOf(".")
-  );
+  const role = email.substring(email.indexOf("@") + 1, email.lastIndexOf("."));
+
+  let sql_1;
+  let sql_2;
+  let field = [email, firstName, lastName, user, password];
+
+  if (role === "programmer") {
+    sql_1 = "SELECT * FROM `programmers_table` WHERE email = ?";
+    sql_2 =
+      "INSERT INTO `programmers_table` (`email`, `firstName`, `lastName`, `programmer`, `password`, `available`) VALUES (?,?,?,?,?,?)";
+    field = [email, firstName, lastName, user, password, true];
+  } else if (role === "manager") {
+    sql_1 = "SELECT * FROM `managers_table` WHERE email = ?";
+    sql_2 =
+      "INSERT INTO `managers_table` (`email`, `firstName`, `lastName`, `manager`, `password`) VALUES (?,?,?,?,?)";
+  } else {
+    sql_1 = "SELECT * FROM `users_table` WHERE email = ?";
+    sql_2 =
+      "INSERT INTO `users_table` (`email`, `firstName`, `lastName`, `user`, `password`) VALUES (?,?,?,?,?)";
+  }
 
   console.log(role);
-  if (role === "programmer") {
-    console.log("Programmer");
-    db.query(
-      "SELECT * FROM `programmers_table` WHERE email = ?",
-      [email],
-      (err, result) => {
-        if (err) {
-          console.log("An error occurred:" + err.message);
-          res.send({
-            status: 500,
-            message: "An error occurred:" + err.message,
+  queryPromise(sql_1, [email])
+    .then((result) => {
+      if (result.length > 0) {
+        console.log(role + " found");
+        return res.status(409).send({ message: role + " found" });
+      } else {
+        console.log(role + " not found");
+        queryPromise(sql_2, field)
+          .then(() => {
+            console.log(role + " inseted");
+            res.status(200).send({ message: role + " inserted" });
+          })
+          .catch((err) => {
+            console.log("An error occurred:" + err.message);
+            return res.status(500).send({
+              message: "An error occurred:" + err.message,
+            });
           });
-        } else {
-          if (result.length > 0) {
-            console.log("programmer found");
-            return res.send({ status: 409, message: "programmer found" });
-          } else {
-            console.log("programmer not found");
-            db.query(
-              "INSERT INTO `programmers_table` (`email`, `firstName`, `lastName`, `programmer`, `password`, `available`) VALUES (?,?,?,?,?,?)",
-              [email, firstName, lastName, user, password, true],
-              (err, result) => {
-                if (err) {
-                  console.log("An error occurred:" + err.message);
-                  res.send({
-                    status: 500,
-                    message: "An error occurred:" + err.message,
-                  });
-                } else {
-                  console.log("programmer inseted");
-                  res.send({ status: 200, message: "programmer inserted" });
-                }
-              }
-            );
-          }
-        }
       }
-    );
-  } else if (role === "manager") {
-    console.log("Manager");
-    db.query(
-      "SELECT * FROM `managers_table` WHERE email = ?",
-      [email],
-      (err, result) => {
-        if (err) {
-          console.log("An error occurred:" + err.message);
-          res.send({
-            status: 500,
-            message: "An error occurred:" + err.message,
-          });
-        } else {
-          if (result.length > 0) {
-            console.log("manager found");
-            return res.send({ status: 409, message: "manager found" });
-          } else {
-            console.log("manager not found");
-            db.query(
-              "INSERT INTO `managers_table` (`email`, `firstName`, `lastName`, `manager`, `password`) VALUES (?,?,?,?,?)",
-              [email, firstName, lastName, user, password],
-              (err, result) => {
-                if (err) {
-                  console.log("An error occurred:" + err.message);
-                  res.send({
-                    status: 500,
-                    message: "An error occurred:" + err.message,
-                  });
-                } else {
-                  console.log("manager inseted");
-                  res.send({ status: 200, message: "manager inserted" });
-                }
-              }
-            );
-          }
-        }
-      }
-    );
-  } else {
-    console.log("User");
-    db.query(
-      "SELECT * FROM `users_table` WHERE email = ?",
-      [email],
-      (err, result) => {
-        if (err) {
-          console.log("An error occurred:" + err.message);
-          res.send({
-            status: 500,
-            message: "An error occurred:" + err.message,
-          });
-        } else {
-          if (result.length > 0) {
-            console.log("user found");
-            console.log(result);
-            return res.send({ status: 409, message: "user found" });
-          } else {
-            console.log("user not found");
-            db.query(
-              "INSERT INTO `users_table` (`email`, `firstName`, `lastName`, `user`, `password`) VALUES (?,?,?,?,?)",
-              [email, firstName, lastName, user, password],
-              (err, result) => {
-                if (err) {
-                  console.log("An error occurred:" + err.message);
-                  res.send({
-                    status: 500,
-                    message: "An error occurred:" + err.message,
-                  });
-                } else {
-                  console.log("user inseted");
-                  res.send({ status: 200, message: "user inserted" });
-                }
-              }
-            );
-          }
-        }
-      }
-    );
-  }
+    })
+    .catch((err) => {
+      return res.status(500).send({
+        message: "An error occurred:" + err.message,
+      });
+    });
 });
 
 app.post("/signIn", (req, res) => {

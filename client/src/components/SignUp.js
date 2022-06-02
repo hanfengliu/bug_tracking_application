@@ -143,24 +143,23 @@ const SignUp = () => {
     })
       .then((res) => {
         console.log(res.data);
-        // console.log(res.data.status === 409);
         setShowMessage(true);
-        if (res.data.status === 409) {
-          setMessage("Email Taken");
-          setColor("danger");
-        } else if (res.data.status === 200) {
+        if (res.status === 200) {
           setMessage("Successfully Registered");
           setColor("success");
           clearForm(e);
-        } else {
-          setMessage("Someting went wrong, try again later");
-          setColor("danger");
         }
       })
       .catch((err) => {
-        console.log(err);
+        setShowMessage(true);
         if (!err?.response) {
           setMessage("No Server Response");
+          setColor("danger");
+        } else if (err?.response?.status === 409) {
+          setMessage("Email Taken");
+          setColor("danger");
+        } else {
+          setMessage("Someting went wrong, try again later");
           setColor("danger");
         }
       });
@@ -199,7 +198,7 @@ const SignUp = () => {
             placeholder="Enter your First Name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            style={{ "boxShadow": "none" }}
+            style={{ boxShadow: "none" }}
             required
           />
         </Form.Group>
@@ -210,7 +209,7 @@ const SignUp = () => {
             placeholder="Enter your Last Name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            style={{ "boxShadow": "none" }}
+            style={{ boxShadow: "none" }}
             required
           />
         </Form.Group>
@@ -239,7 +238,7 @@ const SignUp = () => {
               placeholder="Enter your User name:"
               value={user}
               onChange={(e) => setUser(e.target.value)}
-              style={{ "boxShadow": "none" }}
+              style={{ boxShadow: "none" }}
               required
             />
           </InputGroup>
@@ -268,7 +267,7 @@ const SignUp = () => {
               placeholder="Enter your email:"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={{ "boxShadow": "none" }}
+              style={{ boxShadow: "none" }}
               required
             />
           </InputGroup>
@@ -308,7 +307,7 @@ const SignUp = () => {
               placeholder="Enter your password:"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={{ "boxShadow": "none" }}
+              style={{ boxShadow: "none" }}
               required
             />
             <Button
@@ -354,7 +353,7 @@ const SignUp = () => {
               placeholder="Comfired your password:"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              style={{ "boxShadow": "none" }}
+              style={{ boxShadow: "none" }}
               required
             />
             <Button
@@ -389,7 +388,7 @@ const SignUp = () => {
                   ? true
                   : false
               }
-              style={{ "boxShadow": "none" }}
+              style={{ boxShadow: "none" }}
             >
               Submit
             </Button>
@@ -400,7 +399,7 @@ const SignUp = () => {
         <Col>
           <Link to="/SignIn" style={{ textDecoration: "none" }}>
             <ButtonGroup className="d-flex">
-              <Button variant="secondary" style={{ "boxShadow": "none" }}>
+              <Button variant="secondary" style={{ boxShadow: "none" }}>
                 Return
               </Button>
             </ButtonGroup>
