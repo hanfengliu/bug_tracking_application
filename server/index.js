@@ -125,12 +125,12 @@ app.post("/signUp", (req, res) => {
   if (role === "programmer") {
     sql_1 = "SELECT * FROM `programmers_table` WHERE email = ?";
     sql_2 =
-      "INSERT INTO `programmers_table` (`email`, `firstName`, `lastName`, `programmer`, `password`, `available`) VALUES (?,?,?,?,?,?)";
+      "INSERT INTO `programmers_table` (`email`, `firstName`, `lastName`, `user`, `password`, `available`) VALUES (?,?,?,?,?,?)";
     field = [email, firstName, lastName, user, password, true];
   } else if (role === "manager") {
     sql_1 = "SELECT * FROM `managers_table` WHERE email = ?";
     sql_2 =
-      "INSERT INTO `managers_table` (`email`, `firstName`, `lastName`, `manager`, `password`) VALUES (?,?,?,?,?)";
+      "INSERT INTO `managers_table` (`email`, `firstName`, `lastName`, `user`, `password`) VALUES (?,?,?,?,?)";
   } else {
     sql_1 = "SELECT * FROM `users_table` WHERE email = ?";
     sql_2 =
@@ -168,106 +168,45 @@ app.post("/signUp", (req, res) => {
 app.post("/signIn", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const role = email.substring(
-    email.lastIndexOf("@") + 1,
-    email.lastIndexOf(".")
-  );
-  console.log(role);
-  if (role === "programmer") {
-    db.query(
-      "SELECT * FROM `programmers_table` WHERE email = ? AND password = ?",
-      [email, password],
-      (err, result) => {
-        if (err) {
-          console.log("An error occurred:" + err.message);
-          res.send({
-            status: 500,
-            message: "An error occurred:" + err.message,
-          });
-        } else {
-          console.log(result);
-          if (result.length > 0) {
-            console.log("programmer found");
-            console.log(result[0].id);
-            return res.send({
-              status: 200,
-              message: "programmer found",
-              roles: ["programmer"],
-              id: result[0].programmerId,
-              userName: result[0].programmer,
-              firstName: result[0].firstName,
-              lastName: result[0].lastName,
-            });
-          } else {
-            console.log("programmer not found");
-            return res.send({ status: 409, message: "programmer not found" });
-          }
-        }
-      }
-    );
-  } else if (role === "manager") {
-    db.query(
-      "SELECT * FROM `managers_table` WHERE email = ? AND password = ?",
-      [email, password],
-      (err, result) => {
-        if (err) {
-          console.log("An error occurred:" + err.message);
-          res.send({
-            status: 500,
-            message: "An error occurred:" + err.message,
-          });
-        } else {
-          console.log(result);
-          if (result.length > 0) {
-            console.log("manager found");
-            return res.send({
-              status: 200,
-              message: "manager found",
-              roles: ["manager"],
-              id: result[0].managerId,
-              userName: result[0].manager,
-              firstName: result[0].firstName,
-              lastName: result[0].lastName,
-            });
-          } else {
-            console.log("manager not found");
-            return res.send({ status: 409, message: "manager not found" });
-          }
-        }
-      }
-    );
-  } else {
-    db.query(
-      "SELECT * FROM `users_table` WHERE email = ? AND password = ?",
-      [email, password],
-      (err, result) => {
-        if (err) {
-          console.log("An error occurred:" + err.message);
-          res.send({
-            status: 500,
-            message: "An error occurred:" + err.message,
-          });
-        } else {
-          console.log(result);
-          if (result.length > 0) {
-            console.log("user found");
-            return res.send({
-              status: 200,
-              message: "user found",
-              roles: ["user"],
-              id: result[0].userId,
-              userName: result[0].user,
-              firstName: result[0].firstName,
-              lastName: result[0].lastName,
-            });
-          } else {
-            console.log("user not found");
-            return res.send({ status: 409, message: "user not found" });
-          }
-        }
-      }
-    );
+  let role = email.substring(email.indexOf("@") + 1, email.lastIndexOf("."));
+
+  let sql;
+  let field = [email, password];
+
+  if (role === "programmer")
+    sql = "SELECT * FROM `programmers_table` WHERE email = ? AND password = ?";
+  else if (role === "manager")
+    sql = "SELECT * FROM `managers_table` WHERE email = ? AND password = ?";
+  else {
+    sql = "SELECT * FROM `users_table` WHERE email = ? AND password = ?";
+    role = "user";
   }
+
+  queryPromise(sql, field)
+    .then((result) => {
+      console.log(result);
+      if (result.length > 0) {
+        console.log(role + " found");
+        console.log(result[0].id);
+        return res.status(200).send({
+          message: role + " found",
+          roles: [role],
+          id: result[0].id,
+          userName: result[0].user,
+          firstName: result[0].firstName,
+          lastName: result[0].lastName,
+        });
+      } else {
+        console.log(role + " not found");
+        return res.status(409).send({ message: role + " not found" });
+      }
+    })
+    .catch((err) => {
+      console.log("An error occurred:" + err.message);
+      return res.status(500).send({
+        message: "An error occurred:" + err.message,
+      });
+    });
 });
 
 app.get("/getAllBugs", (req, res) => {

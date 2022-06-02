@@ -53,22 +53,26 @@ const SignIn = () => {
     })
       .then((res) => {
         console.log(res.data);
-        // console.log(res.data.status === 409);
-        setShowMessage(true);
-        if (res.data.status === 409) {
-          setMessage("Either Email, password or both are wrong");
-          setColor("danger");
-        } else if (res.data.status === 200) {
+        if (res.status === 200) {
           setMessage("Successfully Logined");
           setColor("success");
+          setShowMessage(true);
           clearForm(e);
           const roles = res?.data?.roles;
           const id = res?.data?.id;
           const userName = res?.data?.userName;
           const firstName = res?.data?.firstName;
           const lastName = res?.data?.lastName;
-          setAuth({ email, password, roles,id, userName, firstName, lastName });
-          //console.log(auth?.roles);
+          setAuth({
+            email,
+            password,
+            roles,
+            id,
+            userName,
+            firstName,
+            lastName,
+          });
+          console.log(auth?.roles);
           if (roles?.includes("manager")) {
             navigate("/ManagerInterface");
           } else if (roles?.includes("programmer")) {
@@ -78,23 +82,23 @@ const SignIn = () => {
           } else {
             navigate("/Unauthorized");
           }
-        } else {
-          setMessage("Someting went wrong, try again later");
-          setColor("danger");
         }
       })
       .catch((err) => {
         console.log(err);
-        if (!err?.response) {
-          setMessage("No Server Response");
-          setColor("danger");
-        }
+        setColor("danger");
+        setShowMessage(true);
+        if (!err?.response) setMessage("No Server Response");
+        else if (err?.response?.status === 409)
+          setMessage("Either Email, password or both are wrong");
+        else setMessage("Someting went wrong, try again later");
       });
   };
 
   const clearForm = (e) => {
     setEmail("");
     setPassword("");
+    setShowMessage(false);
   };
 
   return (
